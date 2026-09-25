@@ -29,6 +29,7 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle b){
         super.onCreate(b);
+        Thread.setDefaultUncaughtExceptionHandler((thread, error) -> { android.util.Log.e("CarLog","Unhandled startup/runtime crash",error); });
         setContentView(R.layout.activity_main);
         db = new CarLogDb(this);
         bind();
