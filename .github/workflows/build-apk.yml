@@ -1,4 +1,5 @@
 name: Build CarLog APK
+# Manual rebuild trigger: keep workflow active on every push.
 on:
   push:
     branches: ["**"]
