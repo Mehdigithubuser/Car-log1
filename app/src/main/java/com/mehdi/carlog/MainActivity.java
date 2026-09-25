@@ -526,10 +526,10 @@ public class MainActivity extends Activity {
         e.setTextColor(dark);
         e.setHintTextColor(muted);
         e.setPadding(16,0,16,0);
-        e.setMinHeight(68);
+        e.setMinHeight(74);
         e.setBackground(rounded(Color.rgb(244,247,250),18));
-        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,68);
-        p.setMargins(0,0,0,16);
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,74);
+        p.setMargins(0,0,0,18);
         e.setLayoutParams(p);
         return e;
     }
