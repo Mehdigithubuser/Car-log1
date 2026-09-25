@@ -142,9 +142,14 @@ public class MainActivity extends Activity {
         reminderView.setVisibility(active==reminderView?View.VISIBLE:View.GONE);
         moreView.setVisibility(active==moreView?View.VISIBLE:View.GONE);
     }
-    void showHome(){ refreshHome(); showOnly(homeView); }
-    void showMaintenance(){ refreshMaintenance(); showOnly(maintenanceView); }
-    void showReminders(){ checkMileageReminders(); refreshReminders(); showOnly(reminderView); }
+    boolean ensureDb(){
+        if(db!=null) return true;
+        Toast.makeText(this,"CarLog is still loading. Please try again in a moment.",Toast.LENGTH_SHORT).show();
+        return false;
+    }
+    void showHome(){ if(!ensureDb()) return; refreshHome(); showOnly(homeView); }
+    void showMaintenance(){ if(!ensureDb()) return; refreshMaintenance(); showOnly(maintenanceView); }
+    void showReminders(){ if(!ensureDb()) return; checkMileageReminders(); refreshReminders(); showOnly(reminderView); }
     void showMore(){ showOnly(moreView); }
 
     GradientDrawable rounded(int color,float radius){
@@ -168,6 +173,7 @@ public class MainActivity extends Activity {
     }
 
     void refreshHome(){
+        if(!ensureDb()) return;
         CursorWrap v=new CursorWrap(db.vehicle());
         if(v.move()){ vehicleTitle.setText(v.s(1).isEmpty()?"My Vehicle":v.s(1)); vehicleSub.setText((v.s(2)+" "+v.s(3)).trim()+"  •  "+String.format(Locale.US,"%.0f km",v.d(6))); }
         else { vehicleTitle.setText("My Vehicle");vehicleSub.setText("Tap Vehicle profile to add your car"); }
@@ -177,11 +183,27 @@ public class MainActivity extends Activity {
         fuelValue.setText(money(fuel));serviceValue.setText(money(service));expenseValue.setText(money(exp));totalValue.setText(money(total));
         String next="No upcoming reminders";
         CursorWrap r=new CursorWrap(db.reminders());
-        if(r.move()){
-            String title=r.s(1), date=r.s(3); double km=r.d(2);
-            next=title;
-            if(km>0) next += "  •  "+String.format(Locale.US,"%.0f km",km);
-            if(!date.isEmpty()) next += "  •  "+date;
+        long bestScore=Long.MAX_VALUE;
+        while(r.move()){
+            String title=r.s(1), date=r.s(3);
+            double dueKm=r.d(2);
+            StringBuilder line=new StringBuilder(title);
+            long score=Long.MAX_VALUE;
+            double currentOdo=currentOdometer();
+            if(dueKm>0){
+                long remainKm=Math.max(0,Math.round(dueKm-currentOdo));
+                line.append("\\n").append(remainKm==0?"Due now":"In "+String.format(Locale.US,"%.0f km",remainKm));
+                line.append("  •  ").append(String.format(Locale.US,"%.0f km",dueKm));
+                score=Math.min(score,remainKm*1000L);
+            }
+            if(!date.isEmpty()){
+                long days=daysUntil(date);
+                line.append("\\n").append(days<=0?"Due today":days==1?"In 1 day":"In "+days+" days");
+                line.append("  •  ").append(date);
+                score=Math.min(score,Math.max(0,days)*1000L+500);
+            }
+            if(score<bestScore){bestScore=score;next=line.toString();}
+            r.next();
         }
         r.close(); upcomingText.setText(next);
         StringBuilder recent=new StringBuilder(); CursorWrap h=new CursorWrap(db.recent());
@@ -189,9 +211,28 @@ public class MainActivity extends Activity {
         recentList.setText(recent.length()==0?"No records yet":recent.toString());
     }
 
+    double currentOdometer(){
+        CursorWrap c=new CursorWrap(db.vehicle());
+        double x=c.move()?c.d(6):0;
+        c.close();
+        return x;
+    }
+    long daysUntil(String date){
+        try{
+            SimpleDateFormat f=new SimpleDateFormat("yyyy-MM-dd",Locale.US);
+            f.setLenient(false);
+            Date d=f.parse(date);
+            Calendar due=Calendar.getInstance(); due.setTime(d);
+            Calendar now=Calendar.getInstance();
+            due.set(Calendar.HOUR_OF_DAY,0); due.set(Calendar.MINUTE,0); due.set(Calendar.SECOND,0); due.set(Calendar.MILLISECOND,0);
+            now.set(Calendar.HOUR_OF_DAY,0); now.set(Calendar.MINUTE,0); now.set(Calendar.SECOND,0); now.set(Calendar.MILLISECOND,0);
+            return Math.round((due.getTimeInMillis()-now.getTimeInMillis())/86400000.0);
+        }catch(Exception e){return Long.MAX_VALUE/4;}
+    }
     String money(double x){return String.format(Locale.US,"%.0f",x);}
 
     void refreshMaintenance(){
+        if(!ensureDb()) return;
         LinearLayout list=findViewById(R.id.maintenanceList); list.removeAllViews();
         CursorWrap c=new CursorWrap(db.maintenance());
         if(!c.move()){TextView e=tv("No services recorded yet.\nTap + Add service to start your maintenance history.",16,muted,false);e.setPadding(8,24,8,24);list.addView(e);}
@@ -212,6 +253,7 @@ public class MainActivity extends Activity {
     }
 
     void refreshReminders(){
+        if(!ensureDb()) return;
         LinearLayout list=findViewById(R.id.reminderList); list.removeAllViews();
         CursorWrap c=new CursorWrap(db.reminders());
         if(!c.move()){TextView e=tv("No reminders yet.\nCreate one for oil, inspection, insurance, tires or anything else.",16,muted,false);e.setPadding(8,24,8,24);list.addView(e);}
@@ -234,6 +276,7 @@ public class MainActivity extends Activity {
     }
 
     void serviceTemplateDialog(){
+        if(!ensureDb()) return;
         LinearLayout l=column();l.setPadding(28,10,28,8);
         CursorWrap c=new CursorWrap(db.serviceTemplates());ArrayList<String> names=new ArrayList<>();ArrayList<String> hints=new ArrayList<>();
         while(c.move()){names.add(c.s(1));String h="";if(c.d(2)>0)h+=String.format(Locale.US,"every %.0f km",c.d(2));if(c.i(3)>0){if(!h.isEmpty())h+=" / ";h+=c.i(3)+" mo";}hints.add(h);c.next();}c.close();
@@ -252,6 +295,7 @@ public class MainActivity extends Activity {
     }
 
     void addTemplateDialog(){
+        if(!ensureDb()) return;
         LinearLayout l=box();EditText name=field("Service name"),km=field("Default interval km (optional)"),mo=field("Default interval months (optional)");
         l.addView(name);l.addView(km);l.addView(mo);
         new AlertDialog.Builder(this).setTitle("Add service type").setView(l).setPositiveButton("Add",(d,w)->{
@@ -260,6 +304,7 @@ public class MainActivity extends Activity {
     }
 
     void maintenanceDialog(){
+        if(!ensureDb()) return;
         if(vid()<0){vehicleDialog();return;}
         LinearLayout l=box();
         LinearLayout head=row();TextView label=tv("Service type",14,muted,false);head.addView(label,lp(0,-2,1));
@@ -294,18 +339,21 @@ public class MainActivity extends Activity {
     String addMonths(String d,int months){try{SimpleDateFormat f=new SimpleDateFormat("yyyy-MM-dd",Locale.US);Calendar c=Calendar.getInstance();c.setTime(f.parse(d));c.add(Calendar.MONTH,months);return f.format(c.getTime());}catch(Exception e){return "";}}
     
     void reportDialog(){
+        if(!ensureDb()) return;
         new AlertDialog.Builder(this).setTitle("Reports")
             .setMessage("Fuel total: "+money(db.sum("fuel","total"))+"\\nMaintenance total: "+money(db.sum("maintenance","parts+labor"))+"\\nOther expenses: "+money(db.sum("expense","amount")))
             .setPositiveButton("OK",null).show();
     }
 
     void backupDialog(){
+        if(!ensureDb()) return;
         new AlertDialog.Builder(this).setTitle("Backup / Restore")
             .setMessage("Local backup/export can be added next. Your current records stay on the phone and work offline.")
             .setPositiveButton("OK",null).show();
     }
 
     void reminderDialog(){
+        if(!ensureDb()) return;
         if(vid()<0){vehicleDialog();return;}
         LinearLayout l=box();EditText title=field("Reminder title (e.g. Oil change)"),dueKm=field("Due odometer km (optional)"),dueDate=field("Due date YYYY-MM-DD (optional)"),repeatKm=field("Repeat every km (optional)"),repeatMo=field("Repeat every months (optional)"),notifyKm=field("Notify before km"),notifyDays=field("Notify before days");
         for(EditText e:new EditText[]{title,dueKm,dueDate,repeatKm,repeatMo,notifyKm,notifyDays})l.addView(e);
@@ -340,6 +388,7 @@ public class MainActivity extends Activity {
     }
 
     void vehicleDialog(){
+        if(!ensureDb()) return;
         LinearLayout l=box();EditText name=field("Vehicle name"),make=field("Make"),model=field("Model / type"),trim=field("Trim"),year=field("Year"),odo=field("Current odometer km");
         for(EditText e:new EditText[]{name,make,model,trim,year,odo})l.addView(e);
         new AlertDialog.Builder(this).setTitle("Vehicle profile").setView(l).setPositiveButton("Save",(d,w)->{
@@ -348,6 +397,7 @@ public class MainActivity extends Activity {
     }
 
     void fuelDialog(){
+        if(!ensureDb()) return;
         if(vid()<0){vehicleDialog();return;}
         LinearLayout l=box();EditText odo=field("Odometer km"),lit=field("Liters"),price=field("Price per liter"),type=field("Fuel type (Gasoline)"),station=field("Station"),note=field("Note");
         for(EditText e:new EditText[]{odo,lit,price,type,station,note})l.addView(e);
@@ -358,6 +408,7 @@ public class MainActivity extends Activity {
     }
 
     void expenseDialog(){
+        if(!ensureDb()) return;
         if(vid()<0){vehicleDialog();return;}
         LinearLayout l=box();EditText odo=field("Odometer km"),cat=field("Category (e.g. insurance)"),amt=field("Amount"),note=field("Note");
         for(EditText e:new EditText[]{odo,cat,amt,note})l.addView(e);
@@ -367,9 +418,23 @@ public class MainActivity extends Activity {
         }).setNegativeButton("Cancel",null).show();
     }
 
-    long vid(){CursorWrap c=new CursorWrap(db.vehicle());long id=c.move()?c.l(0):-1;c.close();return id;}
-    EditText field(String hint){EditText e=new EditText(this);e.setHint(hint);e.setSingleLine(true);e.setTextSize(15);e.setPadding(14,8,14,8);return e;}
-    LinearLayout box(){LinearLayout l=column();l.setPadding(28,8,28,8);return l;}
+    long vid(){if(db==null)return -1;CursorWrap c=new CursorWrap(db.vehicle());long id=c.move()?c.l(0):-1;c.close();return id;}
+    EditText field(String hint){
+        EditText e=new EditText(this);
+        e.setHint(hint);
+        e.setSingleLine(true);
+        e.setTextSize(15);
+        e.setTextColor(dark);
+        e.setHintTextColor(muted);
+        e.setPadding(16,0,16,0);
+        e.setMinHeight(54);
+        e.setBackground(rounded(Color.rgb(244,247,250),18));
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,54);
+        p.setMargins(0,0,0,12);
+        e.setLayoutParams(p);
+        return e;
+    }
+    LinearLayout box(){LinearLayout l=column();l.setPadding(24,16,24,12);return l;}
     double num(EditText e){try{return Double.parseDouble(e.getText().toString().replace(",",""));}catch(Exception x){return 0;}}
 
     static class CursorWrap {
