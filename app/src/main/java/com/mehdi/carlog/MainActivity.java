@@ -17,7 +17,7 @@ import java.util.*;
 public class MainActivity extends Activity {
     CarLogDb db;
     LinearLayout homeView, maintenanceView, reminderView, moreView;
-    TextView vehicleTitle, vehicleSub, totalValue, fuelValue, serviceValue, expenseValue, upcomingText;
+    TextView vehicleTitle, vehicleSub, totalValue, fuelValue, serviceValue, expenseValue, upcomingText, recentList;
     int blue = Color.rgb(32, 107, 196);
     int teal = Color.rgb(26, 150, 140);
     int bg = Color.rgb(247, 249, 252);
@@ -48,12 +48,12 @@ public class MainActivity extends Activity {
         fuelValue=findViewById(R.id.fuelValue);
         serviceValue=findViewById(R.id.serviceValue);
         expenseValue=findViewById(R.id.expenseValue);
-        upcomingText=findViewById(R.id.upcomingText);
+        upcomingText=findViewById(R.id.upcomingText);\n        recentList=findViewById(R.id.recentList);
 
         findViewById(R.id.quickFuel).setOnClickListener(v->fuelDialog());
         findViewById(R.id.quickService).setOnClickListener(v->maintenanceDialog());
         findViewById(R.id.quickExpense).setOnClickListener(v->expenseDialog());
-        findViewById(R.id.quickReminder).setOnClickListener(v->reminderDialog());
+        findViewById(R.id.quickReminder).setOnClickListener(v->reminderDialog());\n        findViewById(R.id.addServicePage).setOnClickListener(v->maintenanceDialog());\n        findViewById(R.id.addReminderPage).setOnClickListener(v->reminderDialog());\n        findViewById(R.id.vehicleProfilePage).setOnClickListener(v->vehicleDialog());\n        findViewById(R.id.reportsPage).setOnClickListener(v->reportDialog());\n        findViewById(R.id.backupPage).setOnClickListener(v->backupDialog());
         findViewById(R.id.navHome).setOnClickListener(v->showHome());
         findViewById(R.id.navMaintenance).setOnClickListener(v->showMaintenance());
         findViewById(R.id.navReminders).setOnClickListener(v->showReminders());
@@ -127,7 +127,7 @@ public class MainActivity extends Activity {
             if(km>0) next += "  •  "+String.format(Locale.US,"%.0f km",km);
             if(!date.isEmpty()) next += "  •  "+date;
         }
-        r.close(); upcomingText.setText(next);
+        r.close(); upcomingText.setText(next);\n        StringBuilder recent=new StringBuilder(); CursorWrap h=new CursorWrap(db.recent());\n        while(h.move()){ recent.append(h.s(0)).append("  •  ").append(h.s(1)); if(h.d(2)>0) recent.append("  ·  ").append(money(h.d(2))); recent.append("\\n"); h.next(); } h.close();\n        recentList.setText(recent.length()==0?"No records yet":recent.toString());
     }
 
     String money(double x){return String.format(Locale.US,"%.0f",x);}
@@ -226,7 +226,7 @@ public class MainActivity extends Activity {
         new AlertDialog.Builder(this).setTitle("Add service").setView(l).setPositiveButton("Save",(d,w)->{
             String type=(String)service.getSelectedItem();double current=num(odo);db.addMaintenance(vid(),today(),current,type,num(parts),num(labor),num(next),date.getText().toString(),note.getText().toString());
             double nk=num(next);String nd=date.getText().toString();if(nk>0||!nd.isEmpty())db.addReminder(vid(),type,nk,nd,serviceIntervalKm(type),serviceIntervalMonths(type),500,30);
-            Toast.makeText(this,"Service saved",Toast.LENGTH_SHORT).show();showMaintenance();showHome();
+            Toast.makeText(this,"Service saved",Toast.LENGTH_SHORT).show();showMaintenance();
         }).setNegativeButton("Cancel",null).show();
     }
 
@@ -234,6 +234,18 @@ public class MainActivity extends Activity {
     int serviceIntervalMonths(String n){CursorWrap c=new CursorWrap(db.findServiceTemplate(n));int x=c.move()?c.i(1):0;c.close();return x;}
     String addMonths(String d,int months){try{SimpleDateFormat f=new SimpleDateFormat("yyyy-MM-dd",Locale.US);Calendar c=Calendar.getInstance();c.setTime(f.parse(d));c.add(Calendar.MONTH,months);return f.format(c.getTime());}catch(Exception e){return "";}}
     
+    void reportDialog(){
+        new AlertDialog.Builder(this).setTitle("Reports")
+            .setMessage("Fuel total: "+money(db.sum("fuel","total"))+"\\nMaintenance total: "+money(db.sum("maintenance","parts+labor"))+"\\nOther expenses: "+money(db.sum("expense","amount")))
+            .setPositiveButton("OK",null).show();
+    }
+
+    void backupDialog(){
+        new AlertDialog.Builder(this).setTitle("Backup / Restore")
+            .setMessage("Local backup/export can be added next. Your current records stay on the phone and work offline.")
+            .setPositiveButton("OK",null).show();
+    }
+
     void reminderDialog(){
         if(vid()<0){vehicleDialog();return;}
         LinearLayout l=box();EditText title=field("Reminder title (e.g. Oil change)"),dueKm=field("Due odometer km (optional)"),dueDate=field("Due date YYYY-MM-DD (optional)"),repeatKm=field("Repeat every km (optional)"),repeatMo=field("Repeat every months (optional)"),notifyKm=field("Notify before km"),notifyDays=field("Notify before days");
@@ -242,7 +254,7 @@ public class MainActivity extends Activity {
         TextView hint=tv("Use date, mileage, or both. Repeating reminders automatically move to the next interval when completed.",12,muted,false);l.addView(hint);
         new AlertDialog.Builder(this).setTitle("New reminder").setView(l).setPositiveButton("Create",(d,w)->{
             if(title.getText().toString().trim().isEmpty())return;
-            long id=db.addReminder(vid(),title.getText().toString().trim(),num(dueKm),dueDate.getText().toString().trim(),num(repeatKm),(int)num(repeatMo),num(notifyKm),(int)num(notifyDays));
+            db.addReminder(vid(),title.getText().toString().trim(),num(dueKm),dueDate.getText().toString().trim(),num(repeatKm),(int)num(repeatMo),num(notifyKm),(int)num(notifyDays));
             checkMileageReminders();Toast.makeText(this,"Reminder created",Toast.LENGTH_SHORT).show();showReminders();
         }).setNegativeButton("Cancel",null).show();
     }
