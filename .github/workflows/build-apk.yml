@@ -35,7 +35,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v1.0.${{ github.run_number }}"
+          TAG="v1.1.${{ github.run_number }}"
           gh release create "$TAG" "${{ steps.apk.outputs.path }}" \
             --repo "${{ github.repository }}" \
             --title "CarLog $TAG" \
