@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical" android:background="#F7F9FC">
+    android:orientation="vertical" android:background="#F5F7FB">
 
-    <TextView android:layout_width="match_parent" android:layout_height="64dp"
-        android:gravity="center_vertical" android:paddingStart="20dp"
-        android:text="CarLog" android:textSize="26sp" android:textStyle="bold"
-        android:textColor="#192432" android:background="#FFFFFF"/>
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="72dp"
+        android:gravity="center_vertical" android:paddingStart="20dp" android:paddingEnd="20dp"
+        android:background="#FFFFFF">
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="CarLog" android:textSize="25sp" android:textStyle="bold" android:textColor="#17212B"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Your car, maintenance &amp; reminders" android:textSize="12sp" android:textColor="#718096"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+    </LinearLayout>
 
     <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
 
@@ -14,85 +23,128 @@
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical" android:padding="16dp">
 
-                <TextView android:id="@+id/vehicleTitle" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="My Vehicle" android:textSize="24sp" android:textStyle="bold" android:textColor="#192432"/>
-                <TextView android:id="@+id/vehicleSub" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="Tap Vehicle profile to add your car" android:textSize="14sp" android:textColor="#667380"
-                    android:layout_marginTop="4dp"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="18dp" android:background="#FFFFFF">
+                    <TextView android:id="@+id/vehicleTitle" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="My Vehicle" android:textSize="23sp" android:textStyle="bold" android:textColor="#17212B"/>
+                    <TextView android:id="@+id/vehicleSub" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="Tap Vehicle profile to add your car" android:textSize="13sp" android:textColor="#718096"
+                        android:layout_marginTop="6dp"/>
+                </LinearLayout>
 
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="Overview" android:textSize="19sp" android:textStyle="bold"
-                    android:textColor="#192432" android:layout_marginTop="24dp"/>
+                    android:text="Overview" android:textSize="18sp" android:textStyle="bold"
+                    android:textColor="#17212B" android:layout_marginTop="22dp" android:layout_marginBottom="10dp"/>
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                    <TextView android:id="@+id/totalValue" android:layout_width="0dp" android:layout_height="70dp" android:layout_weight="1"
-                        android:gravity="center" android:text="0" android:textSize="22sp" android:textStyle="bold" android:textColor="#192432" android:background="#FFFFFF"/>
-                    <TextView android:id="@+id/fuelValue" android:layout_width="0dp" android:layout_height="70dp" android:layout_weight="1"
-                        android:gravity="center" android:text="0" android:textSize="20sp" android:textStyle="bold" android:textColor="#206BC4" android:background="#FFFFFF"/>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="88dp" android:layout_weight="1"
+                        android:orientation="vertical" android:gravity="center" android:background="#FFFFFF" android:layout_marginEnd="6dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total cost" android:textSize="12sp" android:textColor="#718096"/>
+                        <TextView android:id="@+id/totalValue" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="0" android:textSize="21sp" android:textStyle="bold" android:textColor="#17212B" android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="88dp" android:layout_weight="1"
+                        android:orientation="vertical" android:gravity="center" android:background="#FFFFFF" android:layout_marginStart="6dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Fuel" android:textSize="12sp" android:textColor="#718096"/>
+                        <TextView android:id="@+id/fuelValue" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="0" android:textSize="21sp" android:textStyle="bold" android:textColor="#206BC4" android:layout_marginTop="4dp"/>
+                    </LinearLayout>
                 </LinearLayout>
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
-                    <TextView android:id="@+id/serviceValue" android:layout_width="0dp" android:layout_height="70dp" android:layout_weight="1"
-                        android:gravity="center" android:text="0" android:textSize="20sp" android:textStyle="bold" android:textColor="#1A968C" android:background="#FFFFFF"/>
-                    <TextView android:id="@+id/expenseValue" android:layout_width="0dp" android:layout_height="70dp" android:layout_weight="1"
-                        android:gravity="center" android:text="0" android:textSize="20sp" android:textStyle="bold" android:textColor="#7C5CC4" android:background="#FFFFFF"/>
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="10dp">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="88dp" android:layout_weight="1"
+                        android:orientation="vertical" android:gravity="center" android:background="#FFFFFF" android:layout_marginEnd="6dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Maintenance" android:textSize="12sp" android:textColor="#718096"/>
+                        <TextView android:id="@+id/serviceValue" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="0" android:textSize="21sp" android:textStyle="bold" android:textColor="#1A968C" android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="88dp" android:layout_weight="1"
+                        android:orientation="vertical" android:gravity="center" android:background="#FFFFFF" android:layout_marginStart="6dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Other expenses" android:textSize="12sp" android:textColor="#718096"/>
+                        <TextView android:id="@+id/expenseValue" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="0" android:textSize="21sp" android:textStyle="bold" android:textColor="#7C5CC4" android:layout_marginTop="4dp"/>
+                    </LinearLayout>
                 </LinearLayout>
 
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="Quick actions" android:textSize="19sp" android:textStyle="bold"
-                    android:textColor="#192432" android:layout_marginTop="22dp"/>
+                    android:text="Quick actions" android:textSize="18sp" android:textStyle="bold"
+                    android:textColor="#17212B" android:layout_marginTop="24dp" android:layout_marginBottom="10dp"/>
 
-                <Button android:id="@+id/quickFuel" android:layout_width="match_parent" android:layout_height="52dp"
-                    android:text="Fuel" android:textAllCaps="false"/>
-                <Button android:id="@+id/quickService" android:layout_width="match_parent" android:layout_height="52dp"
-                    android:text="Service" android:textAllCaps="false"/>
-                <Button android:id="@+id/quickExpense" android:layout_width="match_parent" android:layout_height="52dp"
-                    android:text="Expense" android:textAllCaps="false"/>
-                <Button android:id="@+id/quickReminder" android:layout_width="match_parent" android:layout_height="52dp"
-                    android:text="Reminder" android:textAllCaps="false"/>
+                <Button android:id="@+id/quickFuel" android:layout_width="match_parent" android:layout_height="50dp"
+                    android:text="＋  Add fuel" android:textAllCaps="false" android:layout_marginBottom="8dp"/>
+                <Button android:id="@+id/quickService" android:layout_width="match_parent" android:layout_height="50dp"
+                    android:text="＋  Add service" android:textAllCaps="false" android:layout_marginBottom="8dp"/>
+                <Button android:id="@+id/quickExpense" android:layout_width="match_parent" android:layout_height="50dp"
+                    android:text="＋  Add expense" android:textAllCaps="false" android:layout_marginBottom="8dp"/>
+                <Button android:id="@+id/quickReminder" android:layout_width="match_parent" android:layout_height="50dp"
+                    android:text="＋  Add reminder" android:textAllCaps="false"/>
 
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="Next reminder" android:textSize="19sp" android:textStyle="bold"
-                    android:textColor="#192432" android:layout_marginTop="22dp"/>
+                    android:text="Next reminder" android:textSize="18sp" android:textStyle="bold"
+                    android:textColor="#17212B" android:layout_marginTop="24dp" android:layout_marginBottom="10dp"/>
                 <TextView android:id="@+id/upcomingText" android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:text="No upcoming reminders" android:textSize="15sp" android:textColor="#206BC4"
-                    android:padding="14dp" android:background="#FFFFFF"/>
+                    android:padding="18dp" android:background="#FFFFFF"/>
 
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="Recent activity" android:textSize="19sp" android:textStyle="bold"
-                    android:textColor="#192432" android:layout_marginTop="22dp"/>
+                    android:text="Recent activity" android:textSize="18sp" android:textStyle="bold"
+                    android:textColor="#17212B" android:layout_marginTop="24dp" android:layout_marginBottom="10dp"/>
                 <TextView android:id="@+id/recentList" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="No records yet" android:textSize="14sp" android:textColor="#667380"
-                    android:padding="14dp" android:background="#FFFFFF"/>
+                    android:text="No records yet" android:textSize="14sp" android:textColor="#718096"
+                    android:padding="18dp" android:background="#FFFFFF"/>
             </LinearLayout>
         </ScrollView>
 
         <ScrollView android:id="@+id/maintenanceView" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone">
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
-                <Button android:id="@+id/addServicePage" android:layout_width="match_parent" android:layout_height="52dp" android:text="Add service" android:textAllCaps="false"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Maintenance" android:textSize="24sp" android:textStyle="bold" android:textColor="#17212B"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Keep a clean history of services, costs and next due intervals." android:textSize="13sp" android:textColor="#718096"
+                    android:layout_marginTop="4dp" android:layout_marginBottom="16dp"/>
+                <Button android:id="@+id/addServicePage" android:layout_width="match_parent" android:layout_height="52dp"
+                    android:text="＋  Add service" android:textAllCaps="false" android:layout_marginBottom="16dp"/>
                 <LinearLayout android:id="@+id/maintenanceList" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
             </LinearLayout>
         </ScrollView>
 
         <ScrollView android:id="@+id/reminderView" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone">
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
-                <Button android:id="@+id/addReminderPage" android:layout_width="match_parent" android:layout_height="52dp" android:text="Add reminder" android:textAllCaps="false"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Reminders" android:textSize="24sp" android:textStyle="bold" android:textColor="#17212B"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Track time-based and mileage-based maintenance." android:textSize="13sp" android:textColor="#718096"
+                    android:layout_marginTop="4dp" android:layout_marginBottom="16dp"/>
+                <Button android:id="@+id/addReminderPage" android:layout_width="match_parent" android:layout_height="52dp"
+                    android:text="＋  Add reminder" android:textAllCaps="false" android:layout_marginBottom="16dp"/>
                 <LinearLayout android:id="@+id/reminderList" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
             </LinearLayout>
         </ScrollView>
 
         <ScrollView android:id="@+id/moreView" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone">
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
-                <Button android:id="@+id/vehicleProfilePage" android:layout_width="match_parent" android:layout_height="52dp" android:text="Vehicle profile" android:textAllCaps="false"/>
-                <Button android:id="@+id/reportsPage" android:layout_width="match_parent" android:layout_height="52dp" android:text="Reports" android:textAllCaps="false"/>
-                <Button android:id="@+id/backupPage" android:layout_width="match_parent" android:layout_height="52dp" android:text="Backup / Restore" android:textAllCaps="false"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="More" android:textSize="24sp" android:textStyle="bold" android:textColor="#17212B"
+                    android:layout_marginBottom="14dp"/>
+                <Button android:id="@+id/vehicleProfilePage" android:layout_width="match_parent" android:layout_height="56dp"
+                    android:text="Vehicle profile" android:textAllCaps="false" android:layout_marginBottom="10dp"/>
+                <Button android:id="@+id/reportsPage" android:layout_width="match_parent" android:layout_height="56dp"
+                    android:text="Reports" android:textAllCaps="false" android:layout_marginBottom="10dp"/>
+                <Button android:id="@+id/backupPage" android:layout_width="match_parent" android:layout_height="56dp"
+                    android:text="Backup / Restore" android:textAllCaps="false"/>
             </LinearLayout>
         </ScrollView>
     </FrameLayout>
 
-    <LinearLayout android:layout_width="match_parent" android:layout_height="64dp" android:orientation="horizontal" android:background="#FFFFFF">
-        <TextView android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Home" android:textColor="#206BC4"/>
-        <TextView android:id="@+id/navMaintenance" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Maintenance" android:textColor="#667380"/>
-        <TextView android:id="@+id/navReminders" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Reminders" android:textColor="#667380"/>
-        <TextView android:id="@+id/navMore" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="More" android:textColor="#667380"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="68dp" android:orientation="horizontal"
+        android:background="#FFFFFF" android:elevation="8dp" android:paddingTop="4dp" android:paddingBottom="4dp">
+        <TextView android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:gravity="center" android:text="⌂\nHome" android:textSize="12sp" android:textStyle="bold" android:textColor="#206BC4"/>
+        <TextView android:id="@+id/navMaintenance" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:gravity="center" android:text="✓\nMaintenance" android:textSize="12sp" android:textColor="#718096"/>
+        <TextView android:id="@+id/navReminders" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:gravity="center" android:text="◷\nReminders" android:textSize="12sp" android:textColor="#718096"/>
+        <TextView android:id="@+id/navMore" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:gravity="center" android:text="•••\nMore" android:textSize="12sp" android:textColor="#718096"/>
     </LinearLayout>
 </LinearLayout>
