@@ -29,13 +29,24 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle b){
         super.onCreate(b);
-        setContentView(R.layout.activity_main);
-        bind();
-        setupBottomNav();
+        try {
+            setContentView(R.layout.activity_main);
+            bind();
+            setupBottomNav();
+        } catch (Throwable error) {
+            android.util.Log.e("CarLog","UI initialization failed",error);
+            LinearLayout fallback = new LinearLayout(this);
+            fallback.setOrientation(LinearLayout.VERTICAL);
+            fallback.setPadding(32,48,32,32);
+            fallback.setBackgroundColor(bg);
+            TextView title = tv("CarLog",28,dark,true);
+            TextView msg = tv("Starting CarLog…",16,muted,false);
+            fallback.addView(title);
+            fallback.addView(msg);
+            setContentView(fallback);
+            return;
+        }
 
-        // Render the dashboard first. Database migration/opening is intentionally
-        // moved off the UI thread so an old/corrupt database can never leave a
-        // blank white screen while the Activity is starting.
         showOnly(homeView);
         vehicleTitle.setText("My Vehicle");
         vehicleSub.setText("Loading your vehicle data…");
@@ -54,14 +65,22 @@ public class MainActivity extends Activity {
                 CarLogDb loadedDb = new CarLogDb(getApplicationContext());
                 loadedDb.getReadableDatabase();
                 runOnUiThread(() -> {
-                    db = loadedDb;
-                    refreshHome();
-                    scheduleDailyReminderCheck();
+                    try {
+                        db = loadedDb;
+                        refreshHome();
+                        scheduleDailyReminderCheck();
+                    } catch (Throwable error) {
+                        android.util.Log.e("CarLog","Dashboard initialization failed",error);
+                        vehicleSub.setText("Vehicle data is unavailable. You can still use CarLog.");
+                        upcomingText.setText("No upcoming reminders");
+                        recentList.setText("No records yet");
+                        Toast.makeText(MainActivity.this,"CarLog started with an empty dashboard.",Toast.LENGTH_LONG).show();
+                    }
                 });
             } catch (Throwable error) {
                 android.util.Log.e("CarLog","Database initialization failed",error);
                 runOnUiThread(() -> {
-                    vehicleSub.setText("Database could not be opened. Your dashboard is still available.");
+                    vehicleSub.setText("Database could not be opened. The dashboard is still available.");
                     Toast.makeText(MainActivity.this,"CarLog database error — please try again.",Toast.LENGTH_LONG).show();
                 });
             }
