@@ -14,29 +14,31 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Build signed debug APK
-        run: gradle :app:assembleDebug --no-daemon
-      - name: Locate APK
-        id: apk
+      - name: Restore stable signing key
         shell: bash
         run: |
           set -e
-          APK=$(find app/build/outputs -type f -name '*-debug.apk' | head -n 1)
-          test -n "$APK"
-          echo "path=$APK" >> "$GITHUB_OUTPUT"
-          ls -lh "$APK"
+          base64 -d signing/carlog-release.jks.b64 > signing/carlog-release.jks
+          chmod 600 signing/carlog-release.jks
+      - name: Build signed release APK
+        run: gradle :app:assembleRelease --no-daemon
+      - name: Verify APK signature
+        shell: bash
+        run: |
+          set -e
+          APK=app/build/outputs/apk/release/app-release.apk
+          test -f "$APK"
+          $ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | tail -n 1)/apksigner verify --verbose "$APK"
+          sha256sum "$APK"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: CarLog-debug-signed
-          path: ${{ steps.apk.outputs.path }}
+          name: CarLog-release-signed
+          path: app/build/outputs/apk/release/app-release.apk
       - name: Publish GitHub Release
         if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v1.1.${{ github.run_number }}"
-          gh release create "$TAG" "${{ steps.apk.outputs.path }}" \
-            --repo "${{ github.repository }}" \
-            --title "CarLog $TAG" \
-            --generate-notes
+          TAG="v1.2.${{ github.run_number }}"
+          gh release create "$TAG" app/build/outputs/apk/release/app-release.apk             --repo "${{ github.repository }}"             --title "CarLog $TAG"             --generate-notes
