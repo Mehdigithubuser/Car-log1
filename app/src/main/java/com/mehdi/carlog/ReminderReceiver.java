@@ -27,9 +27,12 @@ public class ReminderReceiver extends BroadcastReceiver {
                 }catch(Exception ignored){}
             }
             if(warn){
+                String key="date_"+c.l(0)+"_"+date;
+                if(context.getSharedPreferences("reminder_notifications",Context.MODE_PRIVATE).getBoolean(key,false)){ c.next(); continue; }
                 android.app.Notification.Builder b=Build.VERSION.SDK_INT>=26?new android.app.Notification.Builder(context,"reminders"):new android.app.Notification.Builder(context);
                 b.setSmallIcon(android.R.drawable.ic_popup_reminder).setContentTitle(c.s(1)).setContentText("Reminder due on "+date).setAutoCancel(true);
                 nm.notify((int)(c.l(0)%100000),b.build());
+                context.getSharedPreferences("reminder_notifications",Context.MODE_PRIVATE).edit().putBoolean("date_"+c.l(0)+"_"+date,true).apply();
             }
             c.next();
         }
