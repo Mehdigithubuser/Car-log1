@@ -12,6 +12,6 @@ android {
         versionName = "1.0.0"
     }
     buildTypes {
-        release { minifyEnabled = false }
+        release { isMinifyEnabled = false }
     }
 }
