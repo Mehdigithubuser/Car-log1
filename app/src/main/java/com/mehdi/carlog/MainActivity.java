@@ -17,7 +17,7 @@ import java.util.*;
 
 public class MainActivity extends Activity {
     CarLogDb db;
-    LinearLayout homeView, maintenanceView, reminderView, moreView;
+    View homeView, maintenanceView, reminderView, moreView;
     TextView vehicleTitle, vehicleSub, totalValue, fuelValue, serviceValue, expenseValue, upcomingText, recentList;
     int blue = Color.rgb(32, 107, 196);
     int teal = Color.rgb(26, 150, 140);
