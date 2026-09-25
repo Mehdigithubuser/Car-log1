@@ -120,6 +120,42 @@ public class MainActivity extends Activity {
         for(int id:new int[]{R.id.navHome,R.id.navMaintenance,R.id.navReminders,R.id.navMore}){
             TextView t=findViewById(id); t.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
         }
+        styleAction(R.id.quickFuel,blue);
+        styleAction(R.id.quickService,teal);
+        styleAction(R.id.quickExpense,Color.rgb(124,92,196));
+        styleAction(R.id.quickReminder,Color.rgb(55,135,190));
+        styleAction(R.id.addServicePage,teal);
+        styleAction(R.id.addReminderPage,blue);
+        styleSecondary(R.id.vehicleProfilePage);
+        styleSecondary(R.id.reportsPage);
+        styleSecondary(R.id.backupPage);
+        updateNav(R.id.navHome);
+    }
+    void styleAction(int id,int color){
+        Button b=findViewById(id);
+        b.setAllCaps(false);
+        b.setTextColor(Color.WHITE);
+        b.setTextSize(14);
+        b.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
+        b.setBackground(rounded(color,18));
+        b.setPadding(16,0,16,0);
+    }
+    void styleSecondary(int id){
+        Button b=findViewById(id);
+        b.setAllCaps(false);
+        b.setTextColor(dark);
+        b.setTextSize(15);
+        b.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);
+        b.setPadding(18,0,18,0);
+        b.setBackground(rounded(Color.WHITE,18));
+    }
+    void updateNav(int activeId){
+        int[] ids={R.id.navHome,R.id.navMaintenance,R.id.navReminders,R.id.navMore};
+        for(int id:ids){
+            TextView t=findViewById(id);
+            t.setTextColor(id==activeId?blue:muted);
+            t.setTypeface(Typeface.DEFAULT,id==activeId?Typeface.BOLD:Typeface.NORMAL);
+        }
     }
 
     void requestNotifications(){
@@ -147,10 +183,10 @@ public class MainActivity extends Activity {
         Toast.makeText(this,"CarLog is still loading. Please try again in a moment.",Toast.LENGTH_SHORT).show();
         return false;
     }
-    void showHome(){ if(!ensureDb()) return; refreshHome(); showOnly(homeView); }
-    void showMaintenance(){ if(!ensureDb()) return; refreshMaintenance(); showOnly(maintenanceView); }
-    void showReminders(){ if(!ensureDb()) return; checkMileageReminders(); refreshReminders(); showOnly(reminderView); }
-    void showMore(){ showOnly(moreView); }
+    void showHome(){ if(!ensureDb()) return; refreshHome(); showOnly(homeView); updateNav(R.id.navHome); }
+    void showMaintenance(){ if(!ensureDb()) return; refreshMaintenance(); showOnly(maintenanceView); updateNav(R.id.navMaintenance); }
+    void showReminders(){ if(!ensureDb()) return; checkMileageReminders(); refreshReminders(); showOnly(reminderView); updateNav(R.id.navReminders); }
+    void showMore(){ showOnly(moreView); updateNav(R.id.navMore); }
 
     GradientDrawable rounded(int color,float radius){
         GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(radius);return g;
