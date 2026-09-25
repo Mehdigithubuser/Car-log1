@@ -319,10 +319,10 @@ public class MainActivity extends Activity {
         LinearLayout list=column();
         for(int i=0;i<names.size();i++){
             final String n=names.get(i), h=hints.get(i);
-            LinearLayout item=cardBox();TextView t=tv(n,16,dark,true);item.addView(t);
+            LinearLayout item=cardBox();item.setPadding(20,18,20,18);TextView t=tv(n,16,dark,true);item.addView(t);
             if(!h.isEmpty())item.addView(tv(h,12,muted,false));
             item.setOnClickListener(v->{Toast.makeText(this,"Service selected: "+n,Toast.LENGTH_SHORT).show();});
-            LinearLayout.LayoutParams ip=lp(-1,-2,0);ip.setMargins(0,0,0,8);list.addView(item,ip);
+            LinearLayout.LayoutParams ip=lp(-1,-2,0);ip.setMargins(0,0,0,12);list.addView(item,ip);
         }
         ScrollView sv=new ScrollView(this);sv.addView(list);l.addView(sv,new LinearLayout.LayoutParams(-1,0,1));
         Button add=actionButton("＋ Add service type");l.addView(add,lp(-1,48,0));margin(add,0,10,0,0);
@@ -341,33 +341,96 @@ public class MainActivity extends Activity {
 
     void maintenanceDialog(){
         if(!ensureDb()) return;
-        if(vid()<0){vehicleDialog();return;}
-        LinearLayout l=box();
-        LinearLayout head=row();TextView label=tv("Service type",14,muted,false);head.addView(label,lp(0,-2,1));
-        Button manage=actionButton("Manage list");head.addView(manage,lp(-2,44,0));l.addView(head);
-        Spinner service=new Spinner(this);ArrayList<String> names=new ArrayList<>();CursorWrap c=new CursorWrap(db.serviceTemplates());
-        while(c.move()){names.add(c.s(1));c.next();}c.close();
-        ArrayAdapter<String> ad=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,names);service.setAdapter(ad);l.addView(service);margin(service,0,4,0,8);
-        EditText odo=field("Odometer km"),parts=field("Parts cost"),labor=field("Labor cost"),next=field("Next due km"),date=field("Next due date YYYY-MM-DD"),note=field("Note");
-        l.addView(odo);l.addView(parts);l.addView(labor);l.addView(next);l.addView(date);l.addView(note);
-        TextView helper=tv("Selecting a service can pre-fill its default interval. You can change it.",12,muted,false);l.addView(helper);
-        CursorWrap vv=new CursorWrap(db.vehicle()); if(vv.move())odo.setText(String.format(Locale.US,"%.0f",vv.d(6)));vv.close();
-        service.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){
-            public void onNothingSelected(android.widget.AdapterView<?> p){}
-            public void onItemSelected(android.widget.AdapterView<?> p,View v,int pos,long id){
-                String n=names.get(pos);CursorWrap x=new CursorWrap(db.findServiceTemplate(n));
-                if(x.move()){
-                    double k=x.d(0);int m=x.i(1);double now=num(odo);if(k>0)next.setText(String.format(Locale.US,"%.0f",now+k));
-                    if(m>0)date.setText(addMonths(today(),m));}
-                x.close();
-            }
-        });
-        manage.setOnClickListener(v->serviceTemplateDialog());
-        new AlertDialog.Builder(this).setTitle("Add service").setView(l).setPositiveButton("Save",(d,w)->{
-            String type=(String)service.getSelectedItem();double current=num(odo);db.addMaintenance(vid(),today(),current,type,num(parts),num(labor),num(next),date.getText().toString(),note.getText().toString());
-            double nk=num(next);String nd=date.getText().toString();if(nk>0||!nd.isEmpty())db.addReminder(vid(),type,nk,nd,serviceIntervalKm(type),serviceIntervalMonths(type),500,30);
-            Toast.makeText(this,"Service saved",Toast.LENGTH_SHORT).show();showMaintenance();
-        }).setNegativeButton("Cancel",null).show();
+        try{
+            if(vid()<0){vehicleDialog();return;}
+
+            LinearLayout l=box();
+            LinearLayout head=row();
+            TextView label=tv("Service type",14,muted,false);
+            head.addView(label,lp(0,48,1));
+            Button manage=actionButton("Manage list");
+            head.addView(manage,lp(-2,48,0));
+            l.addView(head);
+            margin(head,0,0,0,12);
+
+            Spinner service=new Spinner(this);
+            ArrayList<String> names=new ArrayList<>();
+            CursorWrap c=new CursorWrap(db.serviceTemplates());
+            while(c.move()){names.add(c.s(1));c.next();}
+            c.close();
+
+            // A database from an older/partial install may contain no templates.
+            // Keep the dialog usable instead of crashing from names.get(pos).
+            if(names.isEmpty()) names.add("Other");
+
+            ArrayAdapter<String> ad=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,names);
+            ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            service.setAdapter(ad);
+            l.addView(service,new LinearLayout.LayoutParams(-1,56));
+            margin(service,0,0,0,16);
+
+            EditText odo=field("Odometer km");
+            EditText parts=field("Parts cost");
+            EditText labor=field("Labor cost");
+            EditText next=field("Next due km");
+            EditText date=field("Next due date YYYY-MM-DD");
+            EditText note=field("Note");
+            l.addView(odo);l.addView(parts);l.addView(labor);l.addView(next);l.addView(date);l.addView(note);
+
+            TextView helper=tv("Selecting a service can pre-fill its default interval. You can change it.",12,muted,false);
+            helper.setPadding(4,4,4,4);
+            l.addView(helper);
+
+            CursorWrap vv=new CursorWrap(db.vehicle());
+            if(vv.move()) odo.setText(String.format(Locale.US,"%.0f",vv.d(6)));
+            vv.close();
+
+            service.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){
+                public void onNothingSelected(android.widget.AdapterView<?> p){}
+                public void onItemSelected(android.widget.AdapterView<?> p,View v,int pos,long id){
+                    try{
+                        if(pos<0 || pos>=names.size()) return;
+                        String n=names.get(pos);
+                        CursorWrap x=new CursorWrap(db.findServiceTemplate(n));
+                        if(x.move()){
+                            double k=x.d(0);int m=x.i(1);double now=num(odo);
+                            if(k>0)next.setText(String.format(Locale.US,"%.0f",now+k));
+                            if(m>0)date.setText(addMonths(today(),m));
+                        }
+                        x.close();
+                    }catch(Throwable ex){
+                        android.util.Log.e("CarLog","Service template selection failed",ex);
+                    }
+                }
+            });
+
+            manage.setOnClickListener(v->serviceTemplateDialog());
+
+            new AlertDialog.Builder(this)
+                .setTitle("Add service")
+                .setView(l)
+                .setPositiveButton("Save",(d,w)->{
+                    try{
+                        String type=service.getSelectedItem()==null?"Other":String.valueOf(service.getSelectedItem());
+                        double current=num(odo);
+                        db.addMaintenance(vid(),today(),current,type,num(parts),num(labor),num(next),date.getText().toString().trim(),note.getText().toString().trim());
+                        double nk=num(next);String nd=date.getText().toString().trim();
+                        if(nk>0||!nd.isEmpty())
+                            db.addReminder(vid(),type,nk,nd,serviceIntervalKm(type),serviceIntervalMonths(type),500,30);
+                        Toast.makeText(this,"Service saved",Toast.LENGTH_SHORT).show();
+                        showMaintenance();
+                    }catch(Throwable ex){
+                        android.util.Log.e("CarLog","Saving service failed",ex);
+                        Toast.makeText(this,"Could not save service: "+ex.getClass().getSimpleName(),Toast.LENGTH_LONG).show();
+                    }
+                })
+                .setNegativeButton("Cancel",null)
+                .show();
+
+        }catch(Throwable ex){
+            android.util.Log.e("CarLog","Opening service dialog failed",ex);
+            Toast.makeText(this,"Could not open Add service. Please try again.",Toast.LENGTH_LONG).show();
+        }
     }
 
     double serviceIntervalKm(String n){CursorWrap c=new CursorWrap(db.findServiceTemplate(n));double x=c.move()?c.d(0):0;c.close();return x;}
@@ -463,14 +526,14 @@ public class MainActivity extends Activity {
         e.setTextColor(dark);
         e.setHintTextColor(muted);
         e.setPadding(16,0,16,0);
-        e.setMinHeight(54);
+        e.setMinHeight(68);
         e.setBackground(rounded(Color.rgb(244,247,250),18));
-        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,54);
-        p.setMargins(0,0,0,12);
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,68);
+        p.setMargins(0,0,0,16);
         e.setLayoutParams(p);
         return e;
     }
-    LinearLayout box(){LinearLayout l=column();l.setPadding(24,16,24,12);return l;}
+    LinearLayout box(){LinearLayout l=column();l.setPadding(28,20,28,18);return l;}
     double num(EditText e){try{return Double.parseDouble(e.getText().toString().replace(",",""));}catch(Exception x){return 0;}}
 
     static class CursorWrap {
