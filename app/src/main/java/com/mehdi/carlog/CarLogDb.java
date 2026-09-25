@@ -5,7 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.*;
 
 public class CarLogDb extends SQLiteOpenHelper {
-    public CarLogDb(Context c) { super(c, "carlog.db", null, 2); }
+    public CarLogDb(Context c) { super(c, "carlog.db", null, 3); }
 
     @Override public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE vehicle(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,make TEXT,model TEXT,trim TEXT,year INTEGER,odometer REAL,unit TEXT)");
@@ -51,15 +51,23 @@ public class CarLogDb extends SQLiteOpenHelper {
     }
 
     @Override public void onUpgrade(SQLiteDatabase db, int oldV, int newV) {
-        if (oldV < 2) {
-            db.execSQL("CREATE TABLE IF NOT EXISTS service_template(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE,interval_km REAL DEFAULT 0,interval_months INTEGER DEFAULT 0,custom INTEGER DEFAULT 0)");
-            seedServiceTemplates(db);
-            try { db.execSQL("ALTER TABLE reminder ADD COLUMN repeat_km REAL DEFAULT 0"); } catch(Exception ignored) {}
-            try { db.execSQL("ALTER TABLE reminder ADD COLUMN repeat_months INTEGER DEFAULT 0"); } catch(Exception ignored) {}
-            try { db.execSQL("ALTER TABLE reminder ADD COLUMN notify_km REAL DEFAULT 500"); } catch(Exception ignored) {}
-            try { db.execSQL("ALTER TABLE reminder ADD COLUMN notify_days INTEGER DEFAULT 7"); } catch(Exception ignored) {}
-            try { db.execSQL("ALTER TABLE reminder ADD COLUMN active INTEGER DEFAULT 1"); } catch(Exception ignored) {}
-        }
+        // Defensive migration for older builds with a partial version-2 schema.
+        db.execSQL("CREATE TABLE IF NOT EXISTS vehicle(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,make TEXT,model TEXT,trim TEXT,year INTEGER,odometer REAL,unit TEXT)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS fuel(id INTEGER PRIMARY KEY AUTOINCREMENT,vehicle_id INTEGER,date TEXT,odometer REAL,type TEXT,liters REAL,price REAL,total REAL,full_tank INTEGER,station TEXT,note TEXT)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS maintenance(id INTEGER PRIMARY KEY AUTOINCREMENT,vehicle_id INTEGER,date TEXT,odometer REAL,type TEXT,parts REAL,labor REAL,next_km REAL,next_date TEXT,note TEXT)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS expense(id INTEGER PRIMARY KEY AUTOINCREMENT,vehicle_id INTEGER,date TEXT,odometer REAL,category TEXT,amount REAL,note TEXT)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS reminder(id INTEGER PRIMARY KEY AUTOINCREMENT,vehicle_id INTEGER,title TEXT,due_km REAL,due_date TEXT,done INTEGER DEFAULT 0,repeat_km REAL DEFAULT 0,repeat_months INTEGER DEFAULT 0,notify_km REAL DEFAULT 500,notify_days INTEGER DEFAULT 7,active INTEGER DEFAULT 1)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS service_template(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE,interval_km REAL DEFAULT 0,interval_months INTEGER DEFAULT 0,custom INTEGER DEFAULT 0)");
+        addColumn(db,"reminder","repeat_km","REAL DEFAULT 0");
+        addColumn(db,"reminder","repeat_months","INTEGER DEFAULT 0");
+        addColumn(db,"reminder","notify_km","REAL DEFAULT 500");
+        addColumn(db,"reminder","notify_days","INTEGER DEFAULT 7");
+        addColumn(db,"reminder","active","INTEGER DEFAULT 1");
+        seedServiceTemplates(db);
+    }
+
+    private void addColumn(SQLiteDatabase db,String table,String column,String definition) {
+        try { db.execSQL("ALTER TABLE "+table+" ADD COLUMN "+column+" "+definition); } catch(Exception ignored) {}
     }
 
     public long addVehicle(String name,String make,String model,String trim,int year,double odo,String unit){
