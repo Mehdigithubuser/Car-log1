@@ -48,12 +48,18 @@ public class MainActivity extends Activity {
         fuelValue=findViewById(R.id.fuelValue);
         serviceValue=findViewById(R.id.serviceValue);
         expenseValue=findViewById(R.id.expenseValue);
-        upcomingText=findViewById(R.id.upcomingText);\n        recentList=findViewById(R.id.recentList);
+        upcomingText=findViewById(R.id.upcomingText);
+        recentList=findViewById(R.id.recentList);
 
         findViewById(R.id.quickFuel).setOnClickListener(v->fuelDialog());
         findViewById(R.id.quickService).setOnClickListener(v->maintenanceDialog());
         findViewById(R.id.quickExpense).setOnClickListener(v->expenseDialog());
-        findViewById(R.id.quickReminder).setOnClickListener(v->reminderDialog());\n        findViewById(R.id.addServicePage).setOnClickListener(v->maintenanceDialog());\n        findViewById(R.id.addReminderPage).setOnClickListener(v->reminderDialog());\n        findViewById(R.id.vehicleProfilePage).setOnClickListener(v->vehicleDialog());\n        findViewById(R.id.reportsPage).setOnClickListener(v->reportDialog());\n        findViewById(R.id.backupPage).setOnClickListener(v->backupDialog());
+        findViewById(R.id.quickReminder).setOnClickListener(v->reminderDialog());
+        findViewById(R.id.addServicePage).setOnClickListener(v->maintenanceDialog());
+        findViewById(R.id.addReminderPage).setOnClickListener(v->reminderDialog());
+        findViewById(R.id.vehicleProfilePage).setOnClickListener(v->vehicleDialog());
+        findViewById(R.id.reportsPage).setOnClickListener(v->reportDialog());
+        findViewById(R.id.backupPage).setOnClickListener(v->backupDialog());
         findViewById(R.id.navHome).setOnClickListener(v->showHome());
         findViewById(R.id.navMaintenance).setOnClickListener(v->showMaintenance());
         findViewById(R.id.navReminders).setOnClickListener(v->showReminders());
@@ -127,7 +133,10 @@ public class MainActivity extends Activity {
             if(km>0) next += "  •  "+String.format(Locale.US,"%.0f km",km);
             if(!date.isEmpty()) next += "  •  "+date;
         }
-        r.close(); upcomingText.setText(next);\n        StringBuilder recent=new StringBuilder(); CursorWrap h=new CursorWrap(db.recent());\n        while(h.move()){ recent.append(h.s(0)).append("  •  ").append(h.s(1)); if(h.d(2)>0) recent.append("  ·  ").append(money(h.d(2))); recent.append("\\n"); h.next(); } h.close();\n        recentList.setText(recent.length()==0?"No records yet":recent.toString());
+        r.close(); upcomingText.setText(next);
+        StringBuilder recent=new StringBuilder(); CursorWrap h=new CursorWrap(db.recent());
+        while(h.move()){ recent.append(h.s(0)).append("  •  ").append(h.s(1)); if(h.d(2)>0) recent.append("  ·  ").append(money(h.d(2))); recent.append("\n"); h.next(); } h.close();
+        recentList.setText(recent.length()==0?"No records yet":recent.toString());
     }
 
     String money(double x){return String.format(Locale.US,"%.0f",x);}
