@@ -29,14 +29,43 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle b){
         super.onCreate(b);
-        Thread.setDefaultUncaughtExceptionHandler((thread, error) -> { android.util.Log.e("CarLog","Unhandled startup/runtime crash",error); });
         setContentView(R.layout.activity_main);
-        db = new CarLogDb(this);
         bind();
         setupBottomNav();
-        requestNotifications();
-        scheduleDailyReminderCheck();
-        showHome();
+
+        // Render the dashboard first. Database migration/opening is intentionally
+        // moved off the UI thread so an old/corrupt database can never leave a
+        // blank white screen while the Activity is starting.
+        showOnly(homeView);
+        vehicleTitle.setText("My Vehicle");
+        vehicleSub.setText("Loading your vehicle data…");
+        totalValue.setText("0");
+        fuelValue.setText("0");
+        serviceValue.setText("0");
+        expenseValue.setText("0");
+        upcomingText.setText("No upcoming reminders");
+        recentList.setText("No records yet");
+
+        if(Build.VERSION.SDK_INT>=33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},25);
+
+        new Thread(() -> {
+            try {
+                CarLogDb loadedDb = new CarLogDb(getApplicationContext());
+                loadedDb.getReadableDatabase();
+                runOnUiThread(() -> {
+                    db = loadedDb;
+                    refreshHome();
+                    scheduleDailyReminderCheck();
+                });
+            } catch (Throwable error) {
+                android.util.Log.e("CarLog","Database initialization failed",error);
+                runOnUiThread(() -> {
+                    vehicleSub.setText("Database could not be opened. Your dashboard is still available.");
+                    Toast.makeText(MainActivity.this,"CarLog database error — please try again.",Toast.LENGTH_LONG).show();
+                });
+            }
+        }, "CarLog-DB").start();
     }
 
     void bind(){
